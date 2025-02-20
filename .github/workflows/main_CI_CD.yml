@@ -1,0 +1,61 @@
+name: Local CI/CD Pipeline for Windows
+
+on:
+  push:
+    branches:
+      - main  # Trigger on push to main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: windows-latest  # Use Windows runner
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Set Up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.13'
+
+      - name: Install Dependencies
+        run: |
+          python -m venv venv
+          venv\Scripts\activate
+          pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run Tests
+        run: |
+          venv\Scripts\activate
+          python -m unittest discover  # Use pytest if needed
+
+  deploy:
+    needs: build  # Runs only after the build step succeeds
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Deploy Locally
+        run: |
+          echo "Starting local deployment on Windows..."
+          
+          $PROJECT_PATH="C:\Users\vivek\PycharmProjects\CI_CD_Test"
+          echo "Deploying to: $PROJECT_PATH"
+
+          if (-Not (Test-Path $PROJECT_PATH)) { New-Item -ItemType Directory -Path $PROJECT_PATH }
+          cd $PROJECT_PATH
+          
+          git pull origin main  # Fetch latest changes
+          
+          python -m venv venv
+          venv\Scripts\activate
+          pip install -r requirements.txt
+
+          echo "Starting the application..."
+          Start-Process -NoNewWindow -FilePath "python.exe" -ArgumentList "main.py"
