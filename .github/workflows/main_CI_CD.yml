@@ -10,7 +10,7 @@ on:
 
 jobs:
   build:
-    runs-on: windows-latest  # Use Windows runner
+    runs-on: windows-latest
 
     steps:
       - name: Checkout Repository
@@ -19,43 +19,44 @@ jobs:
       - name: Set Up Python
         uses: actions/setup-python@v4
         with:
-          python-version: '3.13'
+          python-version: '3.10'
 
-      - name: Install Dependencies
-        run: |
-          python -m venv venv
-          venv\Scripts\activate
-          pip install --upgrade pip
-          pip install -r requirements.txt
+      - name: Run Script
+        run: python main.py  # Execute your script
 
-      - name: Run Tests
+      - name: Verify Output
         run: |
-          venv\Scripts\activate
-          python -m unittest discover  # Use pytest if needed
+          $output = python main.py
+          if ($output -match "CI CD Pipeline test in git hub actions") {
+            echo "✅ Script executed successfully!"
+          } else {
+            echo "❌ Output did not match expected result."
+            exit 1
+          }
+
 
   deploy:
-    needs: build  # Runs only after the build step succeeds
+    needs: build
     runs-on: windows-latest
 
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v3
 
-      - name: Deploy Locally
+      - name: Deploy to Local Path
         run: |
           echo "Starting local deployment on Windows..."
           
           $PROJECT_PATH="C:\Users\vivek\PycharmProjects\CI_CD_Test"
           echo "Deploying to: $PROJECT_PATH"
-
+          
           if (-Not (Test-Path $PROJECT_PATH)) { New-Item -ItemType Directory -Path $PROJECT_PATH }
-          cd $PROJECT_PATH
           
-          git pull origin main  # Fetch latest changes
+          Copy-Item -Path main.py -Destination $PROJECT_PATH -Force
           
-          python -m venv venv
-          venv\Scripts\activate
-          pip install -r requirements.txt
+          echo "✅ Deployment completed successfully."
 
-          echo "Starting the application..."
-          Start-Process -NoNewWindow -FilePath "python.exe" -ArgumentList "main.py"
+      - name: Run Deployed Script
+        run: |
+          cd C:\Users\vivek\PycharmProjects\CI_CD_Test
+          python main.py  # Run script after deployment
