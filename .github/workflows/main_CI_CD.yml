@@ -35,13 +35,14 @@ jobs:
           echo "Starting local deployment on Windows..."
           
           
-          $PROJECT_PATH="C:\Users\vivek\PycharmProjects\CI_CD_Test\build\CI_CD_Test_Latest_Build"
+          $PROJECT_PATH="C:\Users\vivek\PycharmProjects\CI_CD_Test\latest_build"
           
           $TIMESTAMP = Get-Date -Format "dd_MM_yyyy_HH_mm_ss"
           $BACKUP_PROJECT_PATH="C:\Users\vivek\PycharmProjects\CI_CD_Test\backups_build\CI_CD_Test_pushed_by_${{ github.actor }}_${TIMESTAMP}"
           echo "Deploying to: $PROJECT_PATH"
           
           if (-Not (Test-Path $PROJECT_PATH)) { New-Item -ItemType Directory -Path $PROJECT_PATH }
+          if (-Not (Test-Path $BACKUP_PROJECT_PATH)) { New-Item -ItemType Directory -Path $BACKUP_PROJECT_PATH }
           
           Copy-Item -Path * -Destination $PROJECT_PATH -Force
           Copy-Item -Path * -Destination $BACKUP_PROJECT_PATH -Force
@@ -50,5 +51,5 @@ jobs:
 
       - name: Run Deployed Script
         run: |
-          cd C:\Users\vivek\PycharmProjects\CI_CD_Test\build\CI_CD_Test_Latest_Build
+          cd C:\Users\vivek\PycharmProjects\CI_CD_Test\latest_build
           python main.py  # Run script after deployment
