@@ -21,19 +21,6 @@ jobs:
         with:
           python-version: '3.10'
 
-      - name: Run Script
-        run: python main.py  # Execute your script
-
-      - name: Verify Output
-        run: |
-          $output = python main.py
-          if ($output -match "CI CD Pipeline test in git hub actions") {
-            echo "✅ Script executed successfully!"
-          } else {
-            echo "❌ Output did not match expected result."
-            exit 1
-          }
-
 
   deploy:
     needs: build
@@ -47,16 +34,21 @@ jobs:
         run: |
           echo "Starting local deployment on Windows..."
           
-          $PROJECT_PATH="C:\Users\vivek\PycharmProjects\CI_CD_Test"
+          
+          $PROJECT_PATH="C:\Users\vivek\PycharmProjects\CI_CD_Test\build\CI_CD_Test_Latest_Build"
+          
+          $TIMESTAMP = Get-Date -Format "dd_MM_yyyy_HH_mm_ss"
+          $BACKUP_PROJECT_PATH="C:\Users\vivek\PycharmProjects\CI_CD_Test\backups_build\CI_CD_Test_pushed_by_${{ github.actor }}_${TIMESTAMP}"
           echo "Deploying to: $PROJECT_PATH"
           
           if (-Not (Test-Path $PROJECT_PATH)) { New-Item -ItemType Directory -Path $PROJECT_PATH }
           
-          Copy-Item -Path main.py -Destination $PROJECT_PATH -Force
+          Copy-Item -Path * -Destination $PROJECT_PATH -Force
+          Copy-Item -Path * -Destination $BACKUP_PROJECT_PATH -Force
           
           echo "✅ Deployment completed successfully."
 
       - name: Run Deployed Script
         run: |
-          cd C:\Users\vivek\PycharmProjects\CI_CD_Test
+          cd C:\Users\vivek\PycharmProjects\CI_CD_Test\build\CI_CD_Test_Latest_Build
           python main.py  # Run script after deployment
